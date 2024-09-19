@@ -1,29 +1,26 @@
 import React, { useState } from "react";
 
 const Balance = () => {
-  const [bal, setBal] = useState(0);
+  const [balance, setBalance] = useState(0);
+  const [accountId, setAccountId] = useState("");
+  const [error, setError] = useState("");
 
   const onBalance = async (e) => {
     e.preventDefault();
-
-    const acId = e.target.acId.value;
-
-    console.log(`Id ${acId}`);
+    setError(""); // Reset error state
 
     try {
-      const response = await fetch(`http://localhost:3100/balance/${acId}`);
+      const response = await fetch(`http://localhost:3100/balance/${accountId}`);
+      const data = await response.json();
 
-      // Check if the response is ok
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
+      if (response.ok) {
+        setBalance(data.balance); // Assuming 'balance' is the key in the response
+      } else {
+        setError(data.error || "Error retrieving balance");
       }
-
-      const json = await response.json();
-      setBal(json.bal);
     } catch (error) {
       console.error("Error:", error);
-      // Optionally handle error state here, e.g., display an error message to the user
-      setBal("An error occurred while retrieving the balance.");
+      setError("An error occurred while retrieving the balance.");
     }
   };
 
@@ -31,35 +28,41 @@ const Balance = () => {
     <div className="flex flex-col w-full justify-center items-center mt-4 md:mt-16">
       <form
         className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
-        onSubmit={onBalance}>
-        <div className="mb-4">
-          <h4>
-            Balance: <p className="font-bold">{bal}</p>{" "}
-          </h4>
-        </div>
+        onSubmit={onBalance}
+      >
+         <div className="mb-4">
+            <h4>
+              Balance: <p className="font-bold">{balance}</p>
+            </h4>
+          </div>
         <div className="mb-4">
           <label
             className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="acId">
+            htmlFor="acId"
+          >
             Account Id
           </label>
           <input
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="balance"
+            id="acId"
             type="text"
             placeholder="Account ID"
-            name="acId"
+            value={accountId}
+            onChange={(e) => setAccountId(e.target.value)}
           />
         </div>
 
         <div className="flex items-center justify-between">
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="submit">
+            type="submit"
+          >
             Check Balance
           </button>
         </div>
       </form>
+
+        
     </div>
   );
 };

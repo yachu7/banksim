@@ -1,44 +1,84 @@
-// this code will help you to create web application
+const express = require("express");
+const { LocalStorage } = require("node-localstorage");
+const localStorage = new LocalStorage("./scratch");
+const cors = require("cors");
+const app = express();
+app.use(cors());
+app.use(express.json()); // To parse JSON request bodies
 
-const { response } = require('express')
-const express = require('express')
+const port = 3100;
 
-const cors = require('cors')
-const app = express()
-app.use(cors())
+const { createNewAccount, deposit, withdraw, balance } = require("./db.jsx");
 
-const port = 3100
+const getAccounts = () => {
+  const accounts = localStorage.getItem("accounts");
+  return accounts ? JSON.parse(accounts) : {}; // Return parsed accounts or an empty object
+};
 
-const { createNewAccount, deposit, withdraw, balance } = require('./db.jsx')
+app.get("/account/:acId", async (req, res) => {
+  const { acId } = req.params;
+  try {
+    const accounts = getAccounts();
+    if (accounts[acId]) {
+      res.json({ exists: true });
+    } else {
+      res.json({ exists: false });
+    }
+  } catch (error) {
+    console.error("Error fetching account:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
-app.post('/create', express.json(), (req, res) => {
-    createNewAccount( req.body , (msg) => {
-        res.json({ 'sts' : 'success', msg })
-    })
-})
+app.post("/create", async (req, res) => {
+  try {
+    createNewAccount(req.body, (msg) => {
+      res.json({ sts: "success", msg });
+    });
+  } catch (error) {
+    console.error("Error creating new account:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
+app.put("/withdraw", async (req, res) => {
+  try {
+    withdraw(req.body, (msg) => {
+      res.json({ sts: "success", msg });
+    });
+  } catch (error) {
+    console.error("Error withdrawing funds:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
-app.put('/withdraw', express.json(), (req, res) => {
-    withdraw(req.body, msg => {
-        res.json({ 'sts' : 'success', msg })
-    })
-})
+app.put("/deposit", async (req, res) => {
+  try {
+    deposit(req.body, (msg) => {
+      res.json({ sts: "success", msg });
+    });
+  } catch (error) {
+    console.error("Error depositing funds:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
-app.put( '/deposit', express.json() ,(req, res) => {
-    deposit(req.body, msg => {
-        res.json({ 'sts' : 'success', msg })
-    })
-} )
-
-app.get('/balance/:acId', ( req, res ) => {
-    console.log(req.params)
-    const acId = req.params.acId
-    // balance(acId)
-    balance(acId, bal => {
-        res.json({ bal })
-    })
-})
+app.get("/balance/:acId", async (req, res) => {
+    const { acId } = req.params;
+    try {
+      balance(acId, (result) => {
+        if (result.error) {
+          res.status(404).json({ error: result.error });
+        } else {
+          res.json(result); // Send the balance and account name
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching balance:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  });
 
 app.listen(port, () => {
-    console.log(`Banking App app listening on port ${port}`)
-})
+  console.log(`Banking App listening on port ${port}`);
+});
