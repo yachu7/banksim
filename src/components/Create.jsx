@@ -1,71 +1,90 @@
 import React, { useState } from "react";
 
-const Withdraw = () => {
+const Create = () => {
   const [message, setMessage] = useState(""); // State to store the message
-  const onWithdraw = (e) => {
+
+  const onNewCustomer = (e) => {
     e.preventDefault();
 
-    const acId = e.target.acId.value;
-    const amount = e.target.amount.value;
+    const acEmail = e.target.acEmail.value;
+    const acNm = e.target.acNm.value;
+    const balance = e.target.balance.value;
 
-    console.log(`Id ${acId} Amount ${amount}`);
+    console.log(`email ${acEmail}  Name ${acNm} Bal ${balance}`);
 
-    fetch("http://localhost:3100/withdraw", {
-      method: "PUT",
+    fetch("http://localhost:3100/create", {
+      method: "POST",
       headers: {
-        Accept: "application/json",
+        "Accept": "application/json",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ acId, amount }),
+      body: JSON.stringify({ acNm, acEmail, balance }),
     })
       .then((res) => res.json())
       .then((json) => {
         console.log(json);
-         // Ensure msg is a string before setting the state
-      const responseMessage = typeof json.msg === 'string' ? json.msg : "Insufficient Balance";
+        const responseMessage = json.msg || "Error";
+        
+     
 
+        
         setMessage(responseMessage);
-        // Clear the message after 2 seconds
-        setTimeout(() => {
-          setMessage("");
-        }, 2000);
       });
   };
+
   return (
     <div className="flex flex-col w-full justify-center items-center mt-4 md:mt-16">
-      {/*  Display message in the UI */}
-      {message && <div className="m-4 text-green-500">{message}</div>}
+       {/*  Display message in the UI */}
+       {message && (
+        <div className="m-4 text-green-500">
+          {message}
+        </div>
+      )}
       <form
         className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
-        onSubmit={onWithdraw}>
+        onSubmit={onNewCustomer}>
         <div className="mb-4">
           <label
             className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="acId">
-            Account Id
+            htmlFor="name">
+            Name
           </label>
           <input
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="balance"
+            id="name"
             type="text"
-            placeholder="Account ID"
-            name="acId"
+            placeholder="Account Name"
+            name="acNm"
           />
         </div>
 
         <div className="mb-4">
           <label
             className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="withdrawAmount">
-            Withdraw Amount
+            htmlFor="email">
+            Email
           </label>
           <input
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="withdrawAmount"
+            id="email"
+            type="email"
+            placeholder="Email"
+            name="acEmail"
+          />
+        </div>
+
+        <div className="mb-6">
+          <label
+            className="block text-gray-700 text-sm font-bold mb-2"
+            htmlFor="deposit">
+            Initial Deposit
+          </label>
+          <input
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="deposit"
             type="number"
-            placeholder="Enter Amount to Withdraw"
-            name="amount"
-            min="0"
+            placeholder="Initial Deposit"
+            name="balance"
           />
         </div>
 
@@ -73,12 +92,14 @@ const Withdraw = () => {
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
             type="submit">
-            Withdraw
+            Create Account
           </button>
         </div>
       </form>
+
+     
     </div>
   );
 };
 
-export default Withdraw;
+export default Create;

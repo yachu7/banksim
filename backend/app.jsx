@@ -9,7 +9,7 @@ app.use(cors())
 
 const port = 3100
 
-const { createNewAccount, deposit, withdraw, balance, transfer } = require('./db.jsx')
+const { createNewAccount, deposit, withdraw, balance } = require('./db.jsx')
 
 app.post('/create', express.json(), (req, res) => {
     createNewAccount( req.body , (msg) => {
@@ -17,11 +17,6 @@ app.post('/create', express.json(), (req, res) => {
     })
 })
 
-app.put('/transfer', express.json() ,(req, res) => {
-    transfer(req.body, msg => {
-        res.json({ 'sts' : 'success', msg })
-    })
-})
 
 app.put('/withdraw', express.json(), (req, res) => {
     withdraw(req.body, msg => {
