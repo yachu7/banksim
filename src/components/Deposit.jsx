@@ -3,7 +3,7 @@ import React, { useState } from "react";
 const Deposit = () => {
   const [message, setMessage] = useState(""); // State to store the message
 
-  const onDeposit = (e) => {
+  const onDeposit = async (e) => {
     e.preventDefault();
 
     const acId = e.target.acId.value;
@@ -11,26 +11,41 @@ const Deposit = () => {
 
     console.log(`Id ${acId} Amount ${amount}`);
 
-    fetch("http://localhost:3100/deposit", {
-      method: "PUT",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ acId, amount }),
-    })
-      .then((res) => res.json())
-      .then((json) => {
-        console.log(json);
-        const responseMessage = json.msg || "Error";
-
-        setMessage(responseMessage);
-         // Clear the message after 3 seconds
-         setTimeout(() => {
-          setMessage('');
-        }, 2000);
+    try {
+      const response = await fetch("http://localhost:3100/deposit", {
+        method: "PUT",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ acId, amount }),
       });
+
+      // Check if the response is ok
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const json = await response.json();
+      console.log(json);
+      const responseMessage = json.msg || "Error";
+
+      setMessage(responseMessage);
+
+      // Clear the message after 3 seconds
+      setTimeout(() => {
+        setMessage("");
+      }, 3000);
+    } catch (error) {
+      console.error("Error:", error);
+      // Optionally handle error state here, e.g., display an error message to the user
+      setMessage("An error occurred while processing the deposit.");
+      setTimeout(() => {
+        setMessage("");
+      }, 3000);
+    }
   };
+
   return (
     <div className="flex flex-col w-full justify-center items-center mt-4 md:mt-16">
       {/*  Display message in the UI */}

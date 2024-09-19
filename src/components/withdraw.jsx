@@ -2,35 +2,46 @@ import React, { useState } from "react";
 
 const Withdraw = () => {
   const [message, setMessage] = useState(""); // State to store the message
-  const onWithdraw = (e) => {
+  const onWithdraw = async (e) => {
     e.preventDefault();
-
+  
     const acId = e.target.acId.value;
     const amount = e.target.amount.value;
-
+  
     console.log(`Id ${acId} Amount ${amount}`);
-
-    fetch("http://localhost:3100/withdraw", {
-      method: "PUT",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ acId, amount }),
-    })
-      .then((res) => res.json())
-      .then((json) => {
-        console.log(json);
-         // Ensure msg is a string before setting the state
-      const responseMessage = typeof json.msg === 'string' ? json.msg : "Insufficient Balance";
-
-        setMessage(responseMessage);
-        // Clear the message after 2 seconds
-        setTimeout(() => {
-          setMessage("");
-        }, 2000);
+  
+    try {
+      const response = await fetch("http://localhost:3100/withdraw", {
+        method: "PUT",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ acId, amount }),
       });
+  
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+  
+      const json = await response.json();
+      console.log(json);
+  
+      // Ensure msg is a string before setting the state
+      const responseMessage = typeof json.msg === 'string' ? json.msg : "Insufficient Balance";
+  
+      setMessage(responseMessage);
+  
+      // Clear the message after 2 seconds
+      setTimeout(() => {
+        setMessage("");
+      }, 2000);
+    } catch (error) {
+      console.error('Error:', error);
+      setMessage("An error occurred while processing the withdrawal.");
+    }
   };
+  
   return (
     <div className="flex flex-col w-full justify-center items-center mt-4 md:mt-16">
       {/*  Display message in the UI */}

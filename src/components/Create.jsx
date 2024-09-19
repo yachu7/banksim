@@ -3,43 +3,44 @@ import React, { useState } from "react";
 const Create = () => {
   const [message, setMessage] = useState(""); // State to store the message
 
-  const onNewCustomer = (e) => {
+  const onNewCustomer = async (e) => {
     e.preventDefault();
 
     const acEmail = e.target.acEmail.value;
     const acNm = e.target.acNm.value;
     const balance = e.target.balance.value;
 
-    console.log(`email ${acEmail}  Name ${acNm} Bal ${balance}`);
+    console.log(`email ${acEmail} Name ${acNm} Bal ${balance}`);
 
-    fetch("http://localhost:3100/create", {
-      method: "POST",
-      headers: {
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ acNm, acEmail, balance }),
-    })
-      .then((res) => res.json())
-      .then((json) => {
-        console.log(json);
-        const responseMessage = json.msg || "Error";
-        
-     
-
-        
-        setMessage(responseMessage);
+    try {
+      const response = await fetch("http://localhost:3100/create", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ acNm, acEmail, balance }),
       });
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const json = await response.json();
+      console.log(json);
+      const responseMessage = json.msg || "Error";
+
+      setMessage(responseMessage);
+    } catch (error) {
+      console.error("Error:", error);
+      setMessage("An error occurred while creating the new customer.");
+    }
   };
 
   return (
     <div className="flex flex-col w-full justify-center items-center mt-4 md:mt-16">
-       {/*  Display message in the UI */}
-       {message && (
-        <div className="m-4 text-green-500">
-          {message}
-        </div>
-      )}
+      {/*  Display message in the UI */}
+      {message && <div className="m-4 text-green-500">{message}</div>}
       <form
         className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
         onSubmit={onNewCustomer}>
@@ -96,8 +97,6 @@ const Create = () => {
           </button>
         </div>
       </form>
-
-     
     </div>
   );
 };
