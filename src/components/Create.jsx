@@ -86,6 +86,7 @@ const Create = () => {
             type="number"
             placeholder="Initial Deposit"
             name="balance"
+            min={0}
           />
         </div>
 
